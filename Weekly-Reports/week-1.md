@@ -1,24 +1,25 @@
 **TITLE:** AI-Powered Discussion Monitor and Action Item Tracker
 
 
-**WORK DONE:** 
+**WORK DONE:**
 This week, we mainly focused on selecting the project idea. Our project guide provided us with a set of problem statements to choose from. We went through each one carefully as a team and discussed them in detail — analyzing their feasibility, technical scope, and real-world usefulness.
 
 After thorough discussion within the team, we evaluated the options and narrowed down our choice. We also consulted with our mentors/directors to better understand which problem statement would be more suitable and impactful to work on.
+
 Finally, we selected the problem statement: "AI-Powered Discussion Monitor and Action Item Tracker" — a system that can intelligently monitor meetings or group discussions, extract key points, and automatically generate actionable items assigned to relevant participants.
 
 Once the problem statement was finalized, we created the GitHub repository for the project and prepared ourselves to begin development from next week.
 
 
 **PROGRESS:**
-•	Problem statement selected and finalized.
-•	Initial discussions and planning completed.
-•	GitHub repository created.
+- Problem statement selected and finalized.
+- Initial discussions and planning completed.
+- GitHub repository created.
 
 
 **CHALLENGES FACED:**
-•	Difficulty in choosing the best problem statement among the given options, as multiple ideas seemed equally interesting and  feasible
-•	Required team discussions and mentor guidance to finalize a clear direction.
+- Difficulty in choosing the best problem statement among the given options, as multiple ideas seemed equally interesting and feasible.
+- Required team discussions and mentor guidance to finalize a clear direction.
 
 
 **PLAN FOR NEXT WEEK:**
