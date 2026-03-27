@@ -3,6 +3,7 @@
 
 **Work Done:**
 This week, our team focused on customer interaction and requirement gathering. The goal was to understand how potential users currently handle meeting discussions and action items, and to collect feedback that would help us shape the core features of our system.
+
 The team was divided into groups based on the type of customer persona being targeted — college-based users and company-based users — while another sub-group focused on preparing documentation and presentation material.
 
 Customer Persona 1 — College (Professors / Faculty)
@@ -18,23 +19,23 @@ After collecting feedback from both groups, the entire team came together to ana
 
 
 **Progress**
-•	Customer interaction completed with two distinct user groups — college faculty and corporate project managers
-•	Feedback collected and documented from both personas
-•	Positives and negatives from user feedback identified and analyzed
-•	Presentation material and customer persona documentation prepared
+- Customer interaction completed with two distinct user groups — college faculty and corporate project managers.
+- Feedback collected and documented from both personas.
+- Positives and negatives from user feedback identified and analyzed.
+- Presentation material and customer persona documentation prepared.
 
 
 **Challenges Faced**
-•	Coordinating with busy professors and project managers to get quality time for interaction
-•	Reconciling differing expectations between college-based and company-based users
-•	Organizing and structuring the feedback into actionable development insights
+- Coordinating with busy professors and project managers to get quality time for interaction.
+- Reconciling differing expectations between college-based and company-based users.
+- Organizing and structuring the feedback into actionable development insights.
 
 
 **Team Contribution**
-•	Nikhil, Naaneeth, Pavan — Interacted with professors and faculty; collected college-based customer feedback
-•	Rohit, Markandeswara — Interacted with project managers and team leads; collected company-based customer feedback
-•	Pranathi, Manasa — Prepared presentation material and documented customer personas and insights
-•	All members — Collectively analyzed feedback and identified positives and negatives
+- Nikhil, Naaneeth, Pavan — Interacted with professors and faculty; collected college-based customer feedback.
+- Rohit, Markandeswara — Interacted with project managers and team leads; collected company-based customer feedback.
+- Pranathi, Manasa — Prepared presentation material and documented customer personas and insights.
+- All members — Collectively analyzed feedback and identified positives and negatives.
 
 
 **Summary**
