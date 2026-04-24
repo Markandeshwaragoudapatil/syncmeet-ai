@@ -128,6 +128,60 @@
           <div class="char-counter" id="charCounter" aria-live="polite">0 words</div>
         </div>
 
+        <!-- 🆕 PDF Upload Section (Hidden by default) -->
+        <div id="pdfUploadSection" class="field-group" style="display: none;">
+          <label>
+            <span class="field-label-text">PDF Transcript</span>
+            <span class="field-hint">Meeting export, earnings call, or recording transcript — max 10 MB</span>
+          </label>
+          
+          <!-- Drop zone + file input -->
+          <div
+            class="pdf-dropzone"
+            id="pdfDropzone"
+            role="button"
+            tabindex="0"
+            aria-label="Click or drag PDF file here"
+          >
+            <div class="pdf-dropzone-content" id="dropzoneContent">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p><span id="dropzoneLabel">Drop PDF or <strong>browse</strong></span></p>
+            </div>
+            <input type="file" id="pdfFileInput" accept=".pdf" style="display: none;" />
+          </div>
+          
+          <!-- File info (shown after selection) -->
+          <div id="pdfFileInfo" style="display: none; margin-top: 8px; font-size: 0.875rem; color: var(--text-2);">
+            <strong>Selected:</strong> <span id="pdfFileName"></span> <span id="pdfFileSize"></span>
+          </div>
+        </div>
+
+        <!-- Toggle buttons for input mode -->
+        <div class="input-mode-toggle" style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <button
+            type="button"
+            class="mode-toggle-btn active"
+            id="textModeBtn"
+            aria-pressed="true"
+            style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; cursor: pointer; font-size: 0.875rem; color: var(--text-1);"
+          >
+            📄 Paste Text
+          </button>
+          <button
+            type="button"
+            class="mode-toggle-btn"
+            id="pdfModeBtn"
+            aria-pressed="false"
+            style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; cursor: pointer; font-size: 0.875rem; color: var(--text-1);"
+          >
+            📎 Upload PDF
+          </button>
+        </div>
+
         <!-- Analyze button -->
         <button class="btn-analyze" aria-label="Analyze meeting transcript">
           <span class="btn-text">Analyze Meeting</span>

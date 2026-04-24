@@ -54,6 +54,7 @@ async function handleAnalyze() {
     if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
 
     const data = await response.json();
+    currentInputMode = "text";  // Track that this is text mode
     renderResults(data);
     elements.resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
@@ -87,6 +88,12 @@ function setButtonLoading(isLoading) {
 }
 
 // ============================================
+// STATE TRACKING
+// ============================================
+let currentInputMode = "text"; // "text" or "pdf"
+let currentPdfPageCount = 0;   // Store PDF page count for stats
+
+// ============================================
 // RENDER ORCHESTRATOR
 // ============================================
 function renderResults(data) {
@@ -114,13 +121,26 @@ function renderStats(data) {
   const toxicityCount   = data.toxicity ? data.toxicity.length : 0;
   const actionCount     = data.action_items ? data.action_items.length : 0;
   const deviationCount  = data.topic_deviation?.off_topic_points?.length ?? 0;
-  const transcript      = elements.transcriptInput.value;
-  const sentenceCount   = (transcript.match(/[.!?]+/g) || []).length || 1;
+  
+  // Determine if using PDF or text input
+  let firstStatNumber;
+  let firstStatLabel;
+  
+  if (currentInputMode === "pdf") {
+    // For PDF: show page count
+    firstStatNumber = currentPdfPageCount;
+    firstStatLabel = "Pages";
+  } else {
+    // For text: show sentence count
+    const transcript = elements.transcriptInput.value;
+    firstStatNumber = (transcript.match(/[.!?]+/g) || []).length || 1;
+    firstStatLabel = "Sentences";
+  }
 
   elements.statsContainer.innerHTML = `
     <div class="stat-item">
-      <div class="stat-number">${sentenceCount}</div>
-      <div class="stat-label">Sentences</div>
+      <div class="stat-number">${firstStatNumber}</div>
+      <div class="stat-label">${firstStatLabel}</div>
     </div>
     <div class="stat-item">
       <div class="stat-number">${deviationCount}</div>
@@ -250,4 +270,191 @@ function showError(message) {
     </div>
   `;
   elements.resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ============================================
+// 🆕 PDF UPLOAD FEATURE
+// ============================================
+
+// DOM references for PDF upload
+const pdfUploadSection = document.getElementById("pdfUploadSection");
+const pdfDropzone = document.getElementById("pdfDropzone");
+const pdfFileInput = document.getElementById("pdfFileInput");
+const pdfFileInfo = document.getElementById("pdfFileInfo");
+const pdfFileName = document.getElementById("pdfFileName");
+const pdfFileSize = document.getElementById("pdfFileSize");
+const textModeBtn = document.getElementById("textModeBtn");
+const pdfModeBtn = document.getElementById("pdfModeBtn");
+const inputTextarea = document.getElementById("inputText");
+
+let selectedPdfFile = null;
+
+// ── Input mode toggle (Text vs PDF) ──────────────────────────────────────
+textModeBtn.addEventListener("click", () => switchMode("text"));
+pdfModeBtn.addEventListener("click", () => switchMode("pdf"));
+
+function switchMode(mode) {
+  const isText = mode === "text";
+  
+  inputTextarea.style.display = isText ? "block" : "none";
+  pdfUploadSection.style.display = isText ? "none" : "block";
+  
+  textModeBtn.classList.toggle("active", isText);
+  pdfModeBtn.classList.toggle("active", !isText);
+  textModeBtn.setAttribute("aria-pressed", isText);
+  pdfModeBtn.setAttribute("aria-pressed", !isText);
+  
+  // Clear the other input when switching
+  if (isText) {
+    selectedPdfFile = null;
+  } else {
+    elements.transcriptInput.value = "";
+    updateWordCount();
+  }
+}
+
+// ── PDF Dropzone interactions ────────────────────────────────────────────
+pdfDropzone.addEventListener("click", () => pdfFileInput.click());
+
+// Drag & drop support
+pdfDropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  pdfDropzone.style.borderColor = "var(--primary)";
+  pdfDropzone.style.backgroundColor = "rgba(59, 130, 246, 0.05)";
+});
+
+["dragleave", "dragend"].forEach(event => {
+  pdfDropzone.addEventListener(event, () => {
+    pdfDropzone.style.borderColor = "";
+    pdfDropzone.style.backgroundColor = "";
+  });
+});
+
+pdfDropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  pdfDropzone.style.borderColor = "";
+  pdfDropzone.style.backgroundColor = "";
+  const file = e.dataTransfer.files[0];
+  if (file) handlePdfSelected(file);
+});
+
+pdfFileInput.addEventListener("change", () => {
+  if (pdfFileInput.files[0]) handlePdfSelected(pdfFileInput.files[0]);
+});
+
+// ── File selection & validation ──────────────────────────────────────────
+const MAX_PDF_MB = 10;
+
+function handlePdfSelected(file) {
+  // Validate file type
+  if (!file.name.toLowerCase().endsWith(".pdf")) {
+    showError("❌ Invalid file type. Please upload a PDF file.");
+    return;
+  }
+  
+  // Validate file size
+  if (file.size > MAX_PDF_MB * 1024 * 1024) {
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    showError(`❌ File too large (${sizeMB} MB). Maximum: ${MAX_PDF_MB} MB.`);
+    return;
+  }
+  
+  // Store file and show info
+  selectedPdfFile = file;
+  pdfFileName.textContent = file.name;
+  pdfFileSize.textContent = ` (${formatFileSize(file.size)})`;
+  pdfFileInfo.style.display = "block";
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+// ── Intercept analyze button for PDF mode ────────────────────────────────
+// Override button click to detect which mode we're in
+const originalAnalyzeBtn = elements.analyzeBtn;
+originalAnalyzeBtn.removeEventListener("click", handleAnalyze);
+
+originalAnalyzeBtn.addEventListener("click", () => {
+  if (pdfUploadSection.style.display !== "none") {
+    // PDF mode
+    handlePdfAnalyze();
+  } else {
+    // Text mode
+    handleAnalyze();
+  }
+});
+
+// ── PDF analyze handler ──────────────────────────────────────────────────
+async function handlePdfAnalyze() {
+  const topic = elements.topicInput.value.trim();
+  
+  if (!topic) {
+    showError("⚠️ Please enter a meeting topic before uploading.");
+    return;
+  }
+  
+  if (!selectedPdfFile) {
+    showError("⚠️ Please select a PDF file to upload.");
+    return;
+  }
+  
+  setButtonLoading(true, "Extracting & Analyzing…");
+  
+  try {
+    const formData = new FormData();
+    formData.append("file", selectedPdfFile);
+    formData.append("topic", topic);
+    
+    const response = await fetch("/upload", {
+      method: "POST",
+      body: formData,
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showError(`❌ ${data.error || "Upload failed. Please try again."}`);
+      return;
+    }
+    
+    // Show file info in results if metadata provided
+    if (data._pdf_meta) {
+      const meta = data._pdf_meta;
+      console.log(`✓ Extracted ${meta.pages} page(s), ${meta.char_count_cleaned} characters from ${meta.filename}`);
+      currentPdfPageCount = meta.pages;  // Store page count for stats
+    }
+    
+    currentInputMode = "pdf";  // Track that this is PDF mode
+    
+    // Reuse existing result renderer
+    renderResults(data);
+    elements.resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+    
+  } catch (error) {
+    console.error("PDF upload error:", error);
+    showError("❌ Upload failed. Please check your connection and try again.");
+  } finally {
+    setButtonLoading(false);
+  }
+}
+
+// ── Helper: Update button loading state ──────────────────────────────────
+function setButtonLoading(isLoading, label = "Analyzing…") {
+  if (isLoading) {
+    elements.analyzeBtn.disabled = true;
+    elements.analyzeBtn.innerHTML = `<span class="btn-spinner" style="display:inline-block;"></span> ${label}`;
+  } else {
+    elements.analyzeBtn.disabled = false;
+    elements.analyzeBtn.innerHTML = `
+      <span class="btn-text">Analyze Meeting</span>
+      <span class="btn-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </span>
+    `;
+  }
 }

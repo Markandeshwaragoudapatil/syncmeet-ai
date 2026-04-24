@@ -758,6 +758,104 @@ header, main { position: relative; z-index: 1; }
 }
 
 /* ============================================
+   🆕 PDF UPLOAD STYLING
+   ============================================ */
+
+.input-mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.mode-toggle-btn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--t-base) var(--ease);
+}
+
+.mode-toggle-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-1);
+}
+
+.mode-toggle-btn.active {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-bright);
+  box-shadow: 0 0 0 1px var(--accent-glow);
+}
+
+/* PDF Dropzone */
+.pdf-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  border: 2px dashed var(--border);
+  border-radius: var(--r-md);
+  background: rgba(59, 130, 246, 0.02);
+  cursor: pointer;
+  transition: all var(--t-base) var(--ease);
+  text-align: center;
+}
+
+.pdf-dropzone:hover {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.pdf-dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-2);
+}
+
+.pdf-dropzone-content svg {
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+.pdf-dropzone-content p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.pdf-dropzone-content strong {
+  color: var(--accent-bright);
+  font-weight: 600;
+}
+
+#pdfFileInfo {
+  padding: 8px 12px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--r-sm);
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+#pdfFileInfo strong {
+  color: var(--success);
+  font-weight: 600;
+}
+
+#pdfFileName {
+  color: var(--text-1);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* ============================================
    KEYFRAMES
    ============================================ */
 @keyframes fadeUp {
