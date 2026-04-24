@@ -1,90 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Meta Tags -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SyncMeet AI - AI-Powered Meeting Intelligence" />
-    <meta name="theme-color" content="#3b82f6" />
+    <meta name="description" content="SyncMeet AI — AI-Powered Meeting Intelligence" />
+    <meta name="theme-color" content="#0d1117" />
+    <title>SyncMeet AI — Meeting Intelligence</title>
 
-    <!-- Title -->
-    <title>SyncMeet AI - AI-Powered Meeting Intelligence</title>
+    <!-- Distinctive font pairing: DM Serif Display (headings) + DM Sans (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap"
+      rel="stylesheet"
+    />
 
-    <!-- External Stylesheets -->
     <link rel="stylesheet" href="/static/style.css" />
   </head>
 
   <body>
+
+    <!-- Ambient background orbs (CSS-driven, no JS) -->
+    <div class="bg-orbs" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
     <!-- ============================================
-         HEADER SECTION
+         HEADER
          ============================================ -->
     <header class="header">
-      <div class="container">
-        <div class="header-content">
-          <img src="/static/logo.png" alt="SyncMeet AI Logo" class="logo" />
-          <h1>SyncMeet AI</h1>
-          <p>AI-Powered Meeting Intelligence</p>
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" fill="currentColor" opacity="0.9"/>
+              <path d="M2 17l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <span class="brand-name">SyncMeet <em>AI</em></span>
+            <span class="brand-tag">Meeting Intelligence</span>
+          </div>
         </div>
+
+        <nav class="header-nav" aria-label="Status">
+          <span class="status-pill">
+            <span class="status-dot" aria-hidden="true"></span>
+            Model Active
+          </span>
+        </nav>
       </div>
     </header>
 
     <!-- ============================================
-         MAIN CONTENT AREA
+         MAIN LAYOUT
          ============================================ -->
     <main class="main-content">
-      <!-- Left Column: Hero & Results -->
+
+      <!-- LEFT: Hero + Stats + Results -->
       <div class="content-left">
-        <!-- Hero Section -->
-        <section class="hero-section">
-          <h2>Turn raw meeting notes into clear decisions, tasks, and risk signals.</h2>
-          <p>
-            Paste a conversation and instantly review topic drift, unprofessional language,
-            action items, and a concise executive summary.
+
+        <!-- Hero -->
+        <section class="hero-section" aria-labelledby="hero-heading">
+          <p class="hero-eyebrow">AI-Powered Analysis</p>
+          <h1 id="hero-heading">
+            Turn raw meetings into<br />
+            <em>clear decisions.</em>
+          </h1>
+          <p class="hero-sub">
+            Paste any transcript — call notes, standups, reviews — and instantly
+            surface risks, tasks, drift, and decisions.
           </p>
-          <div id="stats" class="stats-grid"></div>
+
+          <!-- Stats strip -->
+          <div id="stats" class="stats-grid" role="region" aria-label="Analysis statistics"></div>
         </section>
 
-        <!-- Results Section: Dynamic Content -->
-        <div id="results"></div>
+        <!-- Results -->
+        <div id="results" role="region" aria-label="Analysis results" aria-live="polite"></div>
       </div>
 
-      <!-- Right Column: Input Section -->
-      <section class="input-section">
-        <h2>Meeting Input</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
-          Paste transcript text, call notes, or team updates to simulate AI analysis.
-        </p>
+      <!-- RIGHT: Input Panel -->
+      <aside class="input-panel" aria-label="Meeting input">
 
-        <!-- Meeting Topic Input -->
-        <div class="form-group">
-          <label for="topic">Meeting Topic</label>
-          <input
-            id="topic"
-            type="text"
-            placeholder="e.g., Sprint Planning, Product Review"
-            aria-label="Meeting topic"
-          />
+        <div class="panel-header">
+          <h2>New Analysis</h2>
+          <p>Enter your meeting details below to begin.</p>
         </div>
 
-        <!-- Meeting Transcript Textarea -->
-        <div class="form-group">
-          <label for="inputText">Meeting Transcript</label>
+        <!-- Topic -->
+        <div class="field-group">
+          <label for="topic">
+            <span class="field-label-text">Meeting Topic</span>
+            <span class="field-hint">What was this meeting about?</span>
+          </label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+              </svg>
+            </span>
+            <input
+              id="topic"
+              type="text"
+              placeholder="e.g., Sprint Planning, Q3 Review…"
+              aria-label="Meeting topic"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
+        <!-- Transcript -->
+        <div class="field-group">
+          <label for="inputText">
+            <span class="field-label-text">Meeting Transcript</span>
+            <span class="field-hint">Full text, notes, or call log</span>
+          </label>
           <textarea
             id="inputText"
-            placeholder="Paste your meeting transcript here..."
+            placeholder="Paste your transcript here…&#10;&#10;Example:&#10;Alice: Let's review last sprint's blockers.&#10;Bob: The auth service still has issues…"
             aria-label="Meeting transcript"
+            spellcheck="false"
           ></textarea>
+          <div class="char-counter" id="charCounter" aria-live="polite">0 words</div>
         </div>
 
-        <!-- Analyze Button -->
-        <button class="btn-analyze" aria-label="Analyze meeting">Analyze Meeting</button>
-      </section>
+        <!-- Analyze button -->
+        <button class="btn-analyze" aria-label="Analyze meeting transcript">
+          <span class="btn-text">Analyze Meeting</span>
+          <span class="btn-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </span>
+        </button>
+
+        <!-- Panel footer note -->
+        <p class="panel-note">
+          Analysis runs locally via Ollama — your data never leaves your machine.
+        </p>
+
+      </aside>
     </main>
 
-    <!-- ============================================
-         EXTERNAL SCRIPTS
-         Load after DOM for better performance
-         ============================================ -->
     <script src="/static/app.js"></script>
   </body>
 </html>

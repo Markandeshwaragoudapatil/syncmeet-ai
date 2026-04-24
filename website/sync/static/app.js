@@ -1,358 +1,253 @@
 /* ============================================
    SyncMeet AI - Application Logic
-   Handles API communication and UI rendering
    ============================================ */
 
-// Cache DOM elements for better performance
 const elements = {
-  topicInput: document.getElementById("topic"),
+  topicInput:      document.getElementById("topic"),
   transcriptInput: document.getElementById("inputText"),
-  analyzeBtn: document.querySelector(".btn-analyze"),
+  analyzeBtn:      document.querySelector(".btn-analyze"),
   resultsContainer: document.getElementById("results"),
-  statsContainer: document.getElementById("stats"),
+  statsContainer:  document.getElementById("stats"),
+  charCounter:     document.getElementById("charCounter"),
 };
+
+// ============================================
+// WORD COUNTER (new in redesign)
+// ============================================
+elements.transcriptInput.addEventListener("input", updateWordCount);
+
+function updateWordCount() {
+  const words = elements.transcriptInput.value.trim().split(/\s+/).filter(Boolean).length;
+  if (elements.charCounter) {
+    elements.charCounter.textContent = words === 0 ? "0 words" : `${words.toLocaleString()} word${words !== 1 ? "s" : ""}`;
+  }
+}
 
 // ============================================
 // EVENT LISTENERS
 // ============================================
-
-// Analyze button click handler
 elements.analyzeBtn.addEventListener("click", handleAnalyze);
 
-// Allow Enter key in topic input to focus transcript
 elements.topicInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    elements.transcriptInput.focus();
-  }
+  if (e.key === "Enter") elements.transcriptInput.focus();
 });
 
 // ============================================
 // MAIN ANALYZE FUNCTION
 // ============================================
-
-/**
- * Handles the analysis process
- * 1. Validates input
- * 2. Shows loading state
- * 3. Calls backend API
- * 4. Renders results
- */
 async function handleAnalyze() {
-  const topic = elements.topicInput.value.trim();
+  const topic      = elements.topicInput.value.trim();
   const transcript = elements.transcriptInput.value.trim();
 
-  // Validation
-  if (!topic) {
-    showError("Please enter a meeting topic");
-    return;
-  }
+  if (!topic)      { showError("Please enter a meeting topic."); return; }
+  if (!transcript) { showError("Please paste the meeting transcript."); return; }
 
-  if (!transcript) {
-    showError("Please paste the meeting transcript");
-    return;
-  }
-
-  // Disable button and show loading state
-  elements.analyzeBtn.disabled = true;
-  elements.analyzeBtn.textContent = "Analyzing";
+  setButtonLoading(true);
 
   try {
-    // Call backend API
     const response = await fetch("/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        topic: topic,
-        text: transcript,
-      }),
+      body: JSON.stringify({ topic, text: transcript }),
     });
 
-    // Handle API errors
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
+    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
 
     const data = await response.json();
-
-    // Render results
     renderResults(data);
-
-    // Scroll to results
     elements.resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
     console.error("Analysis error:", error);
     showError("Failed to analyze transcript. Please try again.");
   } finally {
-    // Reset button state
-    elements.analyzeBtn.disabled = false;
-    elements.analyzeBtn.textContent = "Analyze";
+    setButtonLoading(false);
   }
 }
 
 // ============================================
-// RENDER FUNCTIONS
+// BUTTON LOADING STATE
+// Matches new HTML structure: .btn-text + .btn-icon
 // ============================================
+function setButtonLoading(isLoading) {
+  const btn = elements.analyzeBtn;
+  if (isLoading) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="btn-spinner" style="display:inline-block;"></span> Analyzing…`;
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = `
+      <span class="btn-text">Analyze Meeting</span>
+      <span class="btn-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </span>
+    `;
+  }
+}
 
-/**
- * Renders statistics grid
- * @param {Object} data - API response data
- */
+// ============================================
+// RENDER ORCHESTRATOR
+// ============================================
+function renderResults(data) {
+  renderStats(data);
+
+  elements.resultsContainer.innerHTML = `
+    <div class="results-section">
+      <div class="results-grid">
+        ${renderToxicityCard(data.toxicity)}
+        ${renderTopicDeviationCard(data.topic_deviation)}
+        ${renderActionItemsCard(data.action_items)}
+        ${renderHighlightsCard(data.key_highlights)}
+        ${renderSummaryCard(data.summary)}
+      </div>
+    </div>
+  `;
+
+  applyOverflowCheck();
+}
+
+// ============================================
+// STATS
+// ============================================
 function renderStats(data) {
-  let html = '';
+  const toxicityCount   = data.toxicity ? data.toxicity.length : 0;
+  const actionCount     = data.action_items ? data.action_items.length : 0;
+  const deviationCount  = data.topic_deviation?.off_topic_points?.length ?? 0;
+  const transcript      = elements.transcriptInput.value;
+  const sentenceCount   = (transcript.match(/[.!?]+/g) || []).length || 1;
 
-  // Count toxicity items
-  const toxicityCount = data.toxicity ? data.toxicity.length : 0;
-
-  // Count action items
-  const actionItemsCount = data.action_items ? data.action_items.length : 0;
-
-  // Count off-topic points
-  const deviationsCount =
-    data.topic_deviation && data.topic_deviation.off_topic_points
-      ? data.topic_deviation.off_topic_points.length
-      : 0;
-
-  // Estimate sentences (get from transcript in window scope or count periods)
-  const transcriptText = elements.transcriptInput.value;
-  const sentenceCount = (transcriptText.match(/[.!?]+/g) || []).length || 1;
-
-  html = `
+  elements.statsContainer.innerHTML = `
     <div class="stat-item">
       <div class="stat-number">${sentenceCount}</div>
       <div class="stat-label">Sentences</div>
     </div>
     <div class="stat-item">
-      <div class="stat-number">${deviationsCount}</div>
+      <div class="stat-number">${deviationCount}</div>
       <div class="stat-label">Deviations</div>
     </div>
     <div class="stat-item">
-      <div class="stat-number" style="color: ${toxicityCount > 0 ? '#ef4444' : '#10b981'};">${toxicityCount}</div>
+      <div class="stat-number" style="color:${toxicityCount > 0 ? 'var(--danger)' : 'var(--success)'}">
+        ${toxicityCount}
+      </div>
       <div class="stat-label">Toxic Flags</div>
     </div>
     <div class="stat-item">
-      <div class="stat-number">${actionItemsCount}</div>
+      <div class="stat-number">${actionCount}</div>
       <div class="stat-label">Action Items</div>
     </div>
   `;
-
-  elements.statsContainer.innerHTML = html;
 }
 
-/**
- * Main render function that orchestrates all cards
- * @param {Object} data - API response data
- */
-function renderResults(data) {
-  // Render stats
-  renderStats(data);
+// ============================================
+// CARD RENDERERS
+// ============================================
 
-  let html = `<div class="results-section"><div class="results-grid">`;
-
-  // Render each card
-  html += renderToxicityCard(data.toxicity);
-  html += renderTopicDeviationCard(data.topic_deviation);
-  html += renderActionItemsCard(data.action_items);
-  html += renderHighlightsCard(data.key_highlights);
-  html += renderSummaryCard(data.summary);
-
-  html += `</div></div>`;
-
-  elements.resultsContainer.innerHTML = html;
-}
-
-/**
- * Renders Toxicity Detection Card
- * Shows unprofessional or toxic sentences detected in the meeting
- */
 function renderToxicityCard(toxicity) {
-  let html = `
-    <div class="card">
-      <div class="card-header">
-        <span class="card-icon">🔴</span>
-        <h3>Toxicity Detection</h3>
-      </div>
-  `;
+  const count = toxicity?.length ?? 0;
+  const inner = count === 0
+    ? `<div class="empty-state"><span class="empty-state-icon">✨</span><p>No toxicity detected. Great meeting!</p></div>`
+    : `<div class="scrollable">${toxicity.map(i => `<div class="toxic-item">${escapeHtml(i)}</div>`).join("")}</div>`;
 
-  if (!toxicity || toxicity.length === 0) {
-    html += `
-      <div class="empty-state">
-        <div class="empty-state-icon">✨</div>
-        <p>No toxicity detected. Great meeting!</p>
-      </div>
-    `;
-  } else {
-    toxicity.forEach((item) => {
-      html += `<div class="toxic-item">${escapeHtml(item)}</div>`;
-    });
-  }
-
-  html += `</div>`;
-  return html;
+  return card("🔴", "Toxicity Detection", count > 0 ? `${count} found` : "", inner);
 }
 
-/**
- * Renders Topic Deviation Card
- * Shows whether discussion stayed on topic
- */
 function renderTopicDeviationCard(deviation) {
-  const isAligned = deviation.status.toLowerCase() === "aligned";
-  const statusClass = isAligned ? "status-aligned" : "status-deviated";
+  if (!deviation) return card("🎯", "Topic Alignment", "", `<div class="empty-state"><p>No alignment data</p></div>`);
 
-  let html = `
-    <div class="card">
-      <div class="card-header">
-        <span class="card-icon">🎯</span>
-        <h3>Topic Alignment</h3>
-      </div>
-      <p>
-        <strong>Status:</strong>
-        <span class="status-badge ${statusClass}">${deviation.status}</span>
-      </p>
-  `;
+  const isAligned = deviation.status?.toLowerCase() === "aligned";
+  const points    = deviation.off_topic_points ?? [];
+  const count     = points.length;
 
-  if (
-    deviation.off_topic_points &&
-    Array.isArray(deviation.off_topic_points) &&
-    deviation.off_topic_points.length > 0
-  ) {
-    html += `<p style="margin-top: 1rem;"><strong>Off-Topic Points:</strong></p>`;
-    deviation.off_topic_points.forEach((point) => {
-      html += `<div class="toxic-item">${escapeHtml(point)}</div>`;
-    });
-  } else {
-    html += `<p style="margin-top: 1rem; color: var(--success-color);">✓ Discussion stayed on track</p>`;
-  }
+  const statusHtml = `<p><strong style="color:var(--text-2);font-size:0.82rem;">Status:</strong>
+    <span class="status-badge ${isAligned ? "status-aligned" : "status-deviated"}">${deviation.status}</span></p>`;
 
-  html += `</div>`;
-  return html;
+  const pointsHtml = count === 0
+    ? `<p style="margin-top:.875rem;color:var(--success);font-size:.875rem;">✓ Discussion stayed on track</p>`
+    : `<p style="margin-top:.875rem;margin-bottom:.5rem;font-size:.82rem;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;">Off-Topic Points</p>
+       <div class="scrollable">${points.map(p => `<div class="toxic-item">${escapeHtml(p)}</div>`).join("")}</div>`;
+
+  return card("🎯", "Topic Alignment", count > 0 ? `${count} off-topic` : "", statusHtml + pointsHtml);
 }
 
-/**
- * Renders Action Items Card
- * Displays tasks, assignees, and deadlines
- */
 function renderActionItemsCard(actionItems) {
-  let html = `
-    <div class="card">
-      <div class="card-header">
-        <span class="card-icon">📋</span>
-        <h3>Action Items</h3>
-      </div>
-  `;
-
-  if (!actionItems || actionItems.length === 0) {
-    html += `
-      <div class="empty-state">
-        <p>No action items identified</p>
-      </div>
-    `;
-  } else {
-    actionItems.forEach((item) => {
-      html += `
+  const count = actionItems?.length ?? 0;
+  const inner = count === 0
+    ? `<div class="empty-state"><p>No action items identified</p></div>`
+    : `<div class="scrollable">${actionItems.map(item => `
         <div class="action-item">
           <div class="action-item-field">
-            <span class="action-item-label">Task:</span>
-            <span class="action-item-value">${escapeHtml(item.task)}</span>
+            <span class="action-item-label">Task</span>
+            <span class="action-item-value">${escapeHtml(item.task || "—")}</span>
           </div>
           <div class="action-item-field">
-            <span class="action-item-label">Assignee:</span>
-            <span class="action-item-value">${escapeHtml(item.assignee)}</span>
+            <span class="action-item-label">Assignee</span>
+            <span class="action-item-value">${escapeHtml(item.assignee || "—")}</span>
           </div>
           <div class="action-item-field">
-            <span class="action-item-label">Deadline:</span>
-            <span class="action-item-value">${escapeHtml(item.deadline)}</span>
+            <span class="action-item-label">Deadline</span>
+            <span class="action-item-value">${escapeHtml(item.deadline || "—")}</span>
           </div>
-        </div>
-      `;
-    });
-  }
+        </div>`).join("")}</div>`;
 
-  html += `</div>`;
-  return html;
+  return card("📋", "Action Items", count > 0 ? `${count} tasks` : "", inner);
 }
 
-/**
- * Renders Key Highlights Card
- * Shows important insights and decisions from the meeting
- */
 function renderHighlightsCard(highlights) {
-  let html = `
-    <div class="card">
-      <div class="card-header">
-        <span class="card-icon">⭐</span>
-        <h3>Key Highlights</h3>
-      </div>
-  `;
+  const count = highlights?.length ?? 0;
+  const inner = count === 0
+    ? `<div class="empty-state"><p>No highlights identified</p></div>`
+    : `<div class="scrollable">${highlights.map(h => `<div class="highlight-item">${escapeHtml(h)}</div>`).join("")}</div>`;
 
-  if (!highlights || highlights.length === 0) {
-    html += `
-      <div class="empty-state">
-        <p>No highlights identified</p>
-      </div>
-    `;
-  } else {
-    highlights.forEach((highlight) => {
-      html += `<div class="highlight-item">${escapeHtml(highlight)}</div>`;
-    });
-  }
-
-  html += `</div>`;
-  return html;
+  return card("⭐", "Key Highlights", count > 0 ? `${count} points` : "", inner);
 }
 
-/**
- * Renders Summary Card
- * Displays overall meeting summary
- */
 function renderSummaryCard(summary) {
-  let html = `
+  return card("📄", "Meeting Summary", "", `<p>${escapeHtml(summary || "No summary available.")}</p>`);
+}
+
+// ============================================
+// CARD BUILDER — shared template
+// ============================================
+function card(icon, title, countLabel, body) {
+  return `
     <div class="card">
       <div class="card-header">
-        <span class="card-icon">📄</span>
-        <h3>Meeting Summary</h3>
+        <span class="card-icon">${icon}</span>
+        <h3>${title}</h3>
+        ${countLabel ? `<span class="card-count">${countLabel}</span>` : ""}
       </div>
-      <p>${escapeHtml(summary)}</p>
+      ${body}
     </div>
   `;
-  return html;
 }
 
 // ============================================
-// UTILITY FUNCTIONS
+// OVERFLOW CHECK — removes fade on short lists
 // ============================================
+function applyOverflowCheck() {
+  document.querySelectorAll(".scrollable").forEach((el) => {
+    if (el.scrollHeight <= el.clientHeight) el.classList.add("no-overflow");
+  });
+}
 
-/**
- * Escapes HTML special characters to prevent XSS attacks
- * @param {string} text - Text to escape
- * @returns {string} - Escaped text safe for HTML
- */
+// ============================================
+// UTILITIES
+// ============================================
 function escapeHtml(text) {
-  const map = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  };
-  return text.replace(/[&<>"']/g, (char) => map[char]);
+  if (typeof text !== "string") return String(text ?? "");
+  return text.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c]));
 }
 
-/**
- * Shows an error message to the user
- * @param {string} message - Error message to display
- */
 function showError(message) {
-  // Clear previous results
   elements.resultsContainer.innerHTML = `
-    <div class="card" style="border-left: 4px solid var(--danger-color); background: #fef2f2;">
+    <div class="card" style="border-left:3px solid var(--danger);background:rgba(248,113,113,0.05);">
       <div class="card-header">
         <span class="card-icon">⚠️</span>
-        <h3>Error</h3>
+        <h3 style="color:var(--danger);">Error</h3>
       </div>
-      <p style="color: var(--danger-color);">${escapeHtml(message)}</p>
+      <p style="color:#fca5a5;font-size:.9rem;">${escapeHtml(message)}</p>
     </div>
   `;
-
-  // Scroll to error
   elements.resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
 }
