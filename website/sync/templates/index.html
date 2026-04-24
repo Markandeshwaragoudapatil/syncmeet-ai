@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Meta Tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SyncMeet AI - AI-Powered Meeting Intelligence" />
+    <meta name="theme-color" content="#3b82f6" />
+
+    <!-- Title -->
+    <title>SyncMeet AI - AI-Powered Meeting Intelligence</title>
+
+    <!-- External Stylesheets -->
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+
+  <body>
+    <!-- ============================================
+         HEADER SECTION
+         ============================================ -->
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <img src="/static/logo.png" alt="SyncMeet AI Logo" class="logo" />
+          <h1>SyncMeet AI</h1>
+          <p>AI-Powered Meeting Intelligence</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============================================
+         MAIN CONTENT AREA
+         ============================================ -->
+    <main class="main-content">
+      <!-- Left Column: Hero & Results -->
+      <div class="content-left">
+        <!-- Hero Section -->
+        <section class="hero-section">
+          <h2>Turn raw meeting notes into clear decisions, tasks, and risk signals.</h2>
+          <p>
+            Paste a conversation and instantly review topic drift, unprofessional language,
+            action items, and a concise executive summary.
+          </p>
+          <div id="stats" class="stats-grid"></div>
+        </section>
+
+        <!-- Results Section: Dynamic Content -->
+        <div id="results"></div>
+      </div>
+
+      <!-- Right Column: Input Section -->
+      <section class="input-section">
+        <h2>Meeting Input</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          Paste transcript text, call notes, or team updates to simulate AI analysis.
+        </p>
+
+        <!-- Meeting Topic Input -->
+        <div class="form-group">
+          <label for="topic">Meeting Topic</label>
+          <input
+            id="topic"
+            type="text"
+            placeholder="e.g., Sprint Planning, Product Review"
+            aria-label="Meeting topic"
+          />
+        </div>
+
+        <!-- Meeting Transcript Textarea -->
+        <div class="form-group">
+          <label for="inputText">Meeting Transcript</label>
+          <textarea
+            id="inputText"
+            placeholder="Paste your meeting transcript here..."
+            aria-label="Meeting transcript"
+          ></textarea>
+        </div>
+
+        <!-- Analyze Button -->
+        <button class="btn-analyze" aria-label="Analyze meeting">Analyze Meeting</button>
+      </section>
+    </main>
+
+    <!-- ============================================
+         EXTERNAL SCRIPTS
+         Load after DOM for better performance
+         ============================================ -->
+    <script src="/static/app.js"></script>
+  </body>
+</html>
