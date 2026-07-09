@@ -77,7 +77,7 @@ Tech stack is currently under discussion and will be finalized in upcoming devel
 - Manasa K M — Customer Contact Lead.
 - Pranathi R N — Development lead 
 - Pavan H K — Developer.
-- Navaneeth S — Data Preperating an testing Lead
+- Navaneeth S — Data Preperation and testing Lead
 - Rohith L, Nikhil M — DevOps / GitHub / Product Build / Documentation.
 
 
