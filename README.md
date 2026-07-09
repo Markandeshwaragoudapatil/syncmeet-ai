@@ -75,9 +75,9 @@ Tech stack is currently under discussion and will be finalized in upcoming devel
 **TEAM MEMBERS AND ROLES:**
 - Markandeshwaragouda Patil — Team Lead.
 - Manasa K M — Customer Contact Lead.
-- Pranathi R N — Test Lead.
+- Pranathi R N — Development lead 
 - Pavan H K — Developer.
-- Navaneeth S — Development Lead.
+- Navaneeth S — Data Preperating an testing Lead
 - Rohith L, Nikhil M — DevOps / GitHub / Product Build / Documentation.
 
 
